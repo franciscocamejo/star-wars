@@ -1,49 +1,42 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import logo from './logo.svg';
 import './App.css';
 
-function App() {
-  const [films, setFilms] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchFilms() {
-      let res = await fetch('https://swapi.dev/api/films/?format=json');
-      let data = await res.json();
-      setFilms(data.results);
+const App = () => {
+    const [films,setFilms] = useState([]);
+    const [planets,setPlanets] = useState([]);
+
+    const fetchData  = () => {
+      const filmAPI = 'https://swapi.dev/api/films/?format=json';
+      const planetAPI = 'https://swapi.dev/api/planets'
+
+      const getFilm = axios.get(filmAPI)
+      const getPlanet = axios.get(planetAPI)
+      axios.all([getFilm, getPlanet]).then(
+        axios.spread((...allData) => {
+            const allDataFilm = allData[0].data.results.title
+            const allDataPlanet = allData[1].data.results.name
+
+          setFilms(allDataFilm)
+          setPlanets(allDataPlanet)
+        })
+      )
     }
 
-    fetchFilms();
-  }, [])
+    useEffect(() => {
+      fetchData()
+    }, [])
+    return (
+      <div className="App">
+        Film's name is: {films}
+        Planet's name is: {planets}
+      </div>
+    )
+  
+  }
 
-  console.log('DATA', films);
-  return (
-    <table>
-      <thead>
-          <tr>
-            <th>Título</th>
-            <th>Diretor</th>
-            <th>Produtor</th>
-            <th>Personagens</th>
-            <th>Data de lançamento</th>
-          </tr>
-      </thead>
-      <tbody>
-            {films.map((cur) => {
-              return (
-                <tr key={cur.episode_id}>
-                  <td>{cur.title}</td>
-                  <td>{cur.director}</td>
-                  <td>{cur.producer}</td>
-                  <td>{cur.characters}</td>
-                  <td>{cur.release_date}</td>
-                </tr>
-              );
-            })}
-      </tbody>
-
-    </table>
-  );
-}
+  
 
 export default App;
